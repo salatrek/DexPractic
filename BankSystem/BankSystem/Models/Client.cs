@@ -9,8 +9,9 @@ namespace BankSystem.Models
     class Client : IPerson
     {
         public string Name { get; set; }
-        public string Age { get; set; }
+        public int Age { get; set; }
         public int PassportID { get; set; }
-        public string Position { get; set; }
+        public string Status { get; set; }
+        
     }
 }

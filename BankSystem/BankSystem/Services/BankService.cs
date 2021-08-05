@@ -17,7 +17,7 @@ namespace BankSystem.Services
         {
             var client = person as Client;
 
-            if (person != null)
+            if (client != null)
             {
                 if (!_listOfClient.Contains(client))
                 {
@@ -25,46 +25,49 @@ namespace BankSystem.Services
                 }
                 else
                 {
-                    Console.WriteLine("Такой клиент уже существует");
+                    Console.WriteLine("Такой клиент уже есть в списке.");
                 }
             }
-            else
+          
+            var employee = person as Employee;
+
+            if (employee != null)
             {
-                var employee = person as Employee;
-
-                if (person != null)
+                if (!_listOfEmployee.Contains(employee))
                 {
-                    if (!_listOfEmployee.Contains(employee))
-                    {
-                        _listOfEmployee.Add(employee);
-                    }
-                    else
-                    {
-                        Console.WriteLine("Такой работник уже существует");
-                    }
+                    _listOfEmployee.Add(employee);
                 }
-
+                else
+                {
+                    Console.WriteLine("Такой работник уже есть в списке.");
+                }
             }
         }
-        public Employee FindEmployee(int passID)
+
+        public Employee FindEmployee(int passportID)
         {
-            return Find<Employee>(passID);
+            return Find<Employee>(passportID);
         }
 
-        /*public void FindClient<()
+        public Client FindClient(int passportID)
         {
+            return Find<Client>(passportID);
+        }
 
-        }*/
-
-        private T Find<T>(int passID) where T : IPerson
+        private T Find<T>(int passportID) where T : IPerson
         {
             if (typeof(T) == typeof(Employee))
             {
-                Employee employee = _listOfEmployee.Single(x => x.PassportID == passID);
-                return employee;
+                IPerson employee = _listOfEmployee.Single(x => x.PassportID == passportID);
+                return (T)employee;
             }
 
-            return default(T);
+            else if (typeof(T) == typeof(Client))
+            {
+                IPerson client = _listOfClient.Single(x => x.PassportID == passportID);
+                return (T)client;
+            }
+            throw new InvalidOperationException();
         }
     }
 }
