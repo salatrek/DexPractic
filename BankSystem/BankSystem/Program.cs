@@ -20,6 +20,15 @@ namespace BankSystem
             {
                 Console.WriteLine(ex.Message);
             }
+
+            Currency Rubles = new Currency() { Rate = 73.13 };
+            Currency Euro = new Currency() { Rate = 0.84 };
+            Currency Hryvnia = new Currency() { Rate = 26.82 };
+
+            Exchange exchange = new Exchange();
+            var balance = exchange.СurrencyСonversion(Rubles, 800, Euro);
+
+
         }
     }
 }
