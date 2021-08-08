@@ -9,7 +9,7 @@ namespace BankSystem.Services
 {
     class Exchange : IExchange
     {
-        public float СurrencyСonversion(Currency originalСurrency, float count, Currency desiredСurrency)
+        public float СurrencyСonversion<T>(T originalСurrency, float count, T desiredСurrency) where T : Currency
         {
             if (originalСurrency != null && desiredСurrency != null)
             {

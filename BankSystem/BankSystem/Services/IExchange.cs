@@ -9,7 +9,7 @@ namespace BankSystem.Services
 {
     public interface IExchange
     {
-        float СurrencyСonversion(Currency originalСurrency, float count, Currency desiredСurrency);
+        float СurrencyСonversion<T>(T originalСurrency, float count, T desiredСurrency) where T : Currency;
         
     }
 }
