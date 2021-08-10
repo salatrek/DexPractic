@@ -22,7 +22,7 @@ namespace BankSystem.Services
                 }
                 else
                 {
-                    throw new ArgumentException();
+                    throw new ArithmeticException();
                 }
             }
             else

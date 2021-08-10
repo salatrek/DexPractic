@@ -1,6 +1,7 @@
 ﻿using BankSystem.Models;
 using BankSystem.Services;
 using System;
+using static BankSystem.Services.BankService;
 
 namespace BankSystem
 {
@@ -27,7 +28,6 @@ namespace BankSystem
 
             Exchange exchange = new Exchange();
             var balance = exchange.СurrencyСonversion(Rubles, 800, Euro);
-
 
         }
     }
