@@ -10,8 +10,6 @@ namespace BankSystem.Services
 {
     class BankService
     {
-        public delegate float MoneyTransferHandle(Currency originalСurrency, float count, Currency desiredСurrency);
-
         List<Client> _listOfClient = new List<Client>();
 
         List<Employee> _listOfEmployee = new List<Employee>();
@@ -30,7 +28,7 @@ namespace BankSystem.Services
             }
         }
 
-        public void MoneyTransfer(float summ, Account sourceAccount, Account targetAccount, MoneyTransferHandle moneyTransferHandle)
+        public void MoneyTransfer(float summ, Account sourceAccount, Account targetAccount, Func<Currency,float,Currency,float> moneyTransferHandle)
         {
 
             if (sourceAccount == null) throw new ArgumentNullException(nameof(sourceAccount));
@@ -39,7 +37,7 @@ namespace BankSystem.Services
             if (summ <= 0) throw new InvalidSummException("Указана некорректная сумма.");
             if (summ > sourceAccount.AccountBalance) throw new NotEnoughMoneyException("Недостаточно средств на счете.");
 
-            var targetSumm = moneyTransferHandle.Invoke(sourceAccount.TypeOfCurrency, summ, targetAccount.TypeOfCurrency);
+            var targetSumm = moneyTransferHandle(sourceAccount.TypeOfCurrency, summ, targetAccount.TypeOfCurrency);
 
             sourceAccount.AccountBalance = sourceAccount.AccountBalance - summ;
             targetAccount.AccountBalance = targetAccount.AccountBalance + targetSumm;

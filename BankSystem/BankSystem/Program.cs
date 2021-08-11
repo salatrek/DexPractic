@@ -29,6 +29,8 @@ namespace BankSystem
             Exchange exchange = new Exchange();
             var balance = exchange.СurrencyСonversion(Rubles, 800, Euro);
 
+
+
         }
     }
 }
