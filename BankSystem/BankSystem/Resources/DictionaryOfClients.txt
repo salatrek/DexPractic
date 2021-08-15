@@ -1,0 +1,14 @@
+C1	Anton client	34	547	Good
+[
+	900	73,13;
+	500	0,84;
+	850	26,82;
+]
+C2	Alex client	25	965	Good
+[
+	120	73,13;
+]
+C3	Ana client	26	124	Good
+[
+	1500	0,84;
+]
