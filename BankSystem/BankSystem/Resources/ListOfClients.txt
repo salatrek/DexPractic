@@ -1,3 +1,1 @@
-Alex client	25	580	Good
-Anna client	26	545	Good
-Petya client	26	985	Notgood
+{"Name":"Alex client","Age":25,"PassportID":580,"Status":"Good","ID":null}

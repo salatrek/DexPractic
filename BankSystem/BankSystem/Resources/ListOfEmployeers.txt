@@ -1,1 +1,1 @@
-John employee	34	789	Clerk
+{"Name":"John employee","Age":34,"PassportID":789,"Position":"Clerk"}

@@ -12,7 +12,6 @@ namespace BankSystem.Models
         public int Age { get; set; }
         public int PassportID { get; set; }
         public string Status { get; set; }
-        public string ID { get; set; }
 
         public override int GetHashCode()
         {

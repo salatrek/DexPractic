@@ -18,9 +18,9 @@ namespace BankSystem
             Currency Euro = new Currency() { Rate = 0.84f };
             Currency Hryvnia = new Currency() { Rate = 26.82f };
 
-            Client Anton = new Client() { Name = "Anton client", Age = 34, PassportID = 547, Status = "Good",ID = "C1"};
-            Client Alex = new Client() { Name = "Alex client", Age = 25, PassportID = 965, Status = "Good", ID = "C2" };
-            Client Anna = new Client() { Name = "Ana client", Age = 26, PassportID = 124, Status = "Good", ID = "C3" };
+            Client Anton = new Client() { Name = "Anton client", Age = 34, PassportID = 547, Status = "Good"};
+            Client Alex = new Client() { Name = "Alex client", Age = 25, PassportID = 965, Status = "Good"};
+            Client Anna = new Client() { Name = "Ana client", Age = 26, PassportID = 124, Status = "Good"};
 
 
             Account account = new Account() {TypeOfCurrency = Rubles, AccountBalance = 900};
@@ -43,11 +43,11 @@ namespace BankSystem
             Exchange exchange = new Exchange();
             var balance = exchange.СurrencyСonversion(Rubles, 800, Euro);
 
-            service.AddClientAccount(Anton, account);
-            service.AddClientAccount(Anton, account2);
-            service.AddClientAccount(Anton, account3);
-            service.AddClientAccount(Alex, account4);
-            service.AddClientAccount(Anna, account5);
+            service.AddClientAccount(Anton.PassportID, account);
+            service.AddClientAccount(Anton.PassportID, account2);
+            service.AddClientAccount(Anton.PassportID, account3);
+            service.AddClientAccount(Alex.PassportID, account4);
+            service.AddClientAccount(Anna.PassportID, account5);
 
         }
     }
