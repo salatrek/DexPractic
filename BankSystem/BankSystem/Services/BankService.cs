@@ -16,7 +16,7 @@ namespace BankSystem.Services
 
         List<Employee> _listOfEmployee = new List<Employee>();
 
-        Dictionary<int, List<Account>> clientInfo = new Dictionary<int, List<Account>>();
+        Dictionary<int, List<Account>> _clientInfo = new Dictionary<int, List<Account>>();
 
 
         string clientsPath = "../../../Resources/ListOfClients.txt";
@@ -39,7 +39,7 @@ namespace BankSystem.Services
                     text = streamReader.ReadToEnd();
                 }
                 _listOfClient = JsonConvert.DeserializeObject<List<Client>>(text);
-                
+
             }
             if (File.Exists(employeersPath))
             {
@@ -62,33 +62,31 @@ namespace BankSystem.Services
                     allText = streamReader.ReadToEnd();
                 }
 
-                clientInfo = JsonConvert.DeserializeObject<Dictionary<int, List<Account>>>(allText);
+                _clientInfo = JsonConvert.DeserializeObject<Dictionary<int, List<Account>>>(allText);
             }
         }
 
         public void AddClientAccount(int passportID, Account account)
         {
-            if (clientInfo.ContainsKey(passportID))
+            if (_clientInfo.ContainsKey(passportID))
             {
-                clientInfo[passportID].Add(account);
-
-                var serDictionary = JsonConvert.SerializeObject(clientInfo);
-
-                using (StreamWriter streamWriter = new StreamWriter(dictionaryOfClientsPath, false))
-                {
-                    streamWriter.Write(serDictionary);
-                }
+                _clientInfo[passportID].Add(account);
+                UpdateDataFileDictionary();
             }
             else
             {
-                clientInfo.Add(passportID, new List<Account>() { account });
+                _clientInfo.Add(passportID, new List<Account>() { account });
+                UpdateDataFileDictionary();
+            }
+        }
 
-                var serDictionary = JsonConvert.SerializeObject(clientInfo);
+        private void UpdateDataFileDictionary()
+        {
+            var serDictionary = JsonConvert.SerializeObject(_clientInfo);
 
-                using (StreamWriter streamWriter = new StreamWriter(dictionaryOfClientsPath, false))
-                {
-                    streamWriter.Write(serDictionary);
-                }
+            using (StreamWriter streamWriter = new StreamWriter(dictionaryOfClientsPath, false))
+            {
+                streamWriter.Write(serDictionary);
             }
         }
 
@@ -117,12 +115,7 @@ namespace BankSystem.Services
                 if (!_listOfClient.Contains(client))
                 {
                     _listOfClient.Add(client);
-
-                    var srClient = JsonConvert.SerializeObject(client);
-                    using (StreamWriter streamWriter = new StreamWriter(clientsPath, true))
-                    {
-                        streamWriter.Write(srClient);
-                    }
+                    ListSerializator(_listOfClient);
                 }
                 else
                 {
@@ -137,16 +130,31 @@ namespace BankSystem.Services
                 if (!_listOfEmployee.Contains(employee))
                 {
                     _listOfEmployee.Add(employee);
-                    
-                    var srEmployee = JsonConvert.SerializeObject(employee);
-                    using (StreamWriter streamWriter = new StreamWriter(employeersPath, true))
-                    {
-                        streamWriter.Write(srEmployee);
-                    }
+                    ListSerializator(_listOfEmployee);
                 }
                 else
                 {
                     Console.WriteLine("Такой работник уже есть в списке.");
+                }
+            }
+        }
+
+        private void ListSerializator<T>(List<T> personList) where T : IPerson
+        {
+            if (typeof(T) == typeof(Employee))
+            {
+                var srEmployee = JsonConvert.SerializeObject(personList);
+                using (StreamWriter streamWriter = new StreamWriter(employeersPath, false))
+                {
+                    streamWriter.Write(srEmployee);
+                }
+            }
+            if (typeof(T) == typeof(Client))
+            {
+                var srEmployee = JsonConvert.SerializeObject(personList);
+                using (StreamWriter streamWriter = new StreamWriter(clientsPath, false))
+                {
+                    streamWriter.Write(srEmployee);
                 }
             }
         }
