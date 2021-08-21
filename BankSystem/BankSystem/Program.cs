@@ -21,17 +21,17 @@ namespace BankSystem
             Client Alex = new Client() { Name = "Alex client", Age = 25, PassportID = 965, Status = "Good" };
             Client Anna = new Client() { Name = "Ana client", Age = 26, PassportID = 124, Status = "Good" };
 
-            Account account = new Account() { TypeOfCurrency = Rubles, AccountBalance = 900 };
-            Account account2 = new Account() { TypeOfCurrency = Euro, AccountBalance = 500 };
-            Account account3 = new Account() { TypeOfCurrency = Hryvnia, AccountBalance = 850 };
-            Account account4 = new Account() { TypeOfCurrency = Rubles, AccountBalance = 120 };
-            Account account5 = new Account() { TypeOfCurrency = Euro, AccountBalance = 1500 };
+            Account account = new Account() { CurrencyType = Rubles, AccountBalance = 900 };
+            Account account2 = new Account() { CurrencyType = Euro, AccountBalance = 500 };
+            Account account3 = new Account() { CurrencyType = Hryvnia, AccountBalance = 850 };
+            Account account4 = new Account() { CurrencyType = Rubles, AccountBalance = 120 };
+            Account account5 = new Account() { CurrencyType = Euro, AccountBalance = 1500 };
 
-            service.AddClientAccount(Anton.PassportID, account);
-            service.AddClientAccount(Anton.PassportID, account2);
-            service.AddClientAccount(Anton.PassportID, account3);
-            service.AddClientAccount(Alex.PassportID, account4);
-            service.AddClientAccount(Anna.PassportID, account5);
+            service.AddAccountToClient(Anton.PassportID, account);
+            service.AddAccountToClient(Anton.PassportID, account2);
+            service.AddAccountToClient(Anton.PassportID, account3);
+            service.AddAccountToClient(Alex.PassportID, account4);
+            service.AddAccountToClient(Anna.PassportID, account5);
 
             Exchange exchange = new Exchange();
             var balance = exchange.СurrencyСonversion(Rubles, 800, Euro);

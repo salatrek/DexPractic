@@ -3,94 +3,97 @@ using BankSystem.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 using Newtonsoft.Json;
 
 namespace BankSystem.Services
 {
-    class BankService
+    internal class BankService
     {
-        List<Client> _listOfClient = new List<Client>();
+        List<Client> _clientsList;
+        List<Employee> _employeersList;
+        Dictionary<int, List<Account>> _clientsInfo;
 
-        List<Employee> _listOfEmployee = new List<Employee>();
-
-        Dictionary<int, List<Account>> _clientInfo = new Dictionary<int, List<Account>>();
-
-
-        string clientsPath = "../../../Resources/ListOfClients.txt";
-        string employeersPath = "../../../Resources/ListOfEmployeers.txt";
-        string dictionaryOfClientsPath = "../../../Resources/DictionaryOfClients.txt";
+        private const string clientsFilePath = "../../../Resources/ListOfClients.txt";
+        private const string employeersFilePath = "../../../Resources/ListOfEmployeers.txt";
+        private const string clientsDictionaryFilePath = "../../../Resources/DictionaryOfClients.txt";
 
         public BankService()
         {
-            ReadToList();
-            ReadToDictionary();
+            _clientsList = new List<Client>();
+            _employeersList = new List<Employee>();
+            _clientsInfo = new Dictionary<int, List<Account>>();
+
+            FillListFromFile();
+            FillDictionaryFromFile();
         }
 
-        private void ReadToList()
+        private void FillListFromFile()
         {
-            if (File.Exists(clientsPath))
+            if (File.Exists(clientsFilePath))
             {
                 string text;
-                using (StreamReader streamReader = new StreamReader(clientsPath))
+                using (var streamReader = new StreamReader(clientsFilePath))
                 {
                     text = streamReader.ReadToEnd();
                 }
-                _listOfClient = JsonConvert.DeserializeObject<List<Client>>(text);
+                _clientsList = JsonConvert.DeserializeObject<List<Client>>(text);
 
             }
-            if (File.Exists(employeersPath))
+            if (File.Exists(employeersFilePath))
             {
                 string text;
-                using (StreamReader streamReader = new StreamReader(employeersPath))
+                using (var streamReader = new StreamReader(employeersFilePath))
                 {
                     text = streamReader.ReadToEnd();
                 }
-                _listOfEmployee = JsonConvert.DeserializeObject<List<Employee>>(text);
+                _employeersList = JsonConvert.DeserializeObject<List<Employee>>(text);
             }
         }
-        private void ReadToDictionary()
+        private void FillDictionaryFromFile()
         {
-            if (File.Exists(dictionaryOfClientsPath))
+            if (File.Exists(clientsDictionaryFilePath))
             {
                 string allText;
 
-                using (StreamReader streamReader = new StreamReader(dictionaryOfClientsPath))
+                using (var streamReader = new StreamReader(clientsDictionaryFilePath))
                 {
                     allText = streamReader.ReadToEnd();
                 }
 
-                _clientInfo = JsonConvert.DeserializeObject<Dictionary<int, List<Account>>>(allText);
+                _clientsInfo = JsonConvert.DeserializeObject<Dictionary<int, List<Account>>>(allText);
             }
         }
 
-        public void AddClientAccount(int passportID, Account account)
+        public void AddAccountToClient(int passportID, Account account)
         {
-            if (_clientInfo.ContainsKey(passportID))
+            if (_clientsInfo.ContainsKey(passportID))
             {
-                _clientInfo[passportID].Add(account);
-                UpdateDataFileDictionary();
+                _clientsInfo[passportID].Add(account);
+                UpdateDictionaryDataFile();
             }
             else
             {
-                _clientInfo.Add(passportID, new List<Account>() { account });
-                UpdateDataFileDictionary();
+                _clientsInfo.Add(passportID, new List<Account>() { account });
+                UpdateDictionaryDataFile();
             }
         }
 
-        private void UpdateDataFileDictionary()
+        private void UpdateDictionaryDataFile()
         {
-            var serDictionary = JsonConvert.SerializeObject(_clientInfo);
+            var serDictionary = JsonConvert.SerializeObject(_clientsInfo);
 
-            using (StreamWriter streamWriter = new StreamWriter(dictionaryOfClientsPath, false))
+            using (var streamWriter = new StreamWriter(clientsDictionaryFilePath, false))
             {
                 streamWriter.Write(serDictionary);
             }
         }
 
-        public void MoneyTransfer(float summ, Account sourceAccount, Account targetAccount, Func<Currency, float, Currency, float> moneyTransferHandle)
+        public void TransferMoney(
+            float summ,
+            Account sourceAccount,
+            Account targetAccount,
+            Func<Currency, float, Currency, float> moneyTransferHandle)
         {
             if (sourceAccount == null) throw new ArgumentNullException(nameof(sourceAccount));
             if (targetAccount == null) throw new ArgumentNullException(nameof(sourceAccount));
@@ -98,7 +101,7 @@ namespace BankSystem.Services
             if (summ <= 0) throw new InvalidSummException("Указана некорректная сумма.");
             if (summ > sourceAccount.AccountBalance) throw new NotEnoughMoneyException("Недостаточно средств на счете.");
 
-            var targetSumm = moneyTransferHandle(sourceAccount.TypeOfCurrency, summ, targetAccount.TypeOfCurrency);
+            var targetSumm = moneyTransferHandle(sourceAccount.CurrencyType, summ, targetAccount.CurrencyType);
 
             sourceAccount.AccountBalance = sourceAccount.AccountBalance - summ;
             targetAccount.AccountBalance = targetAccount.AccountBalance + targetSumm;
@@ -108,14 +111,12 @@ namespace BankSystem.Services
         {
             if (person.Age < 18) throw new YoungPersonException("Пользователь не достиг совершеннолетия (18 лет)");
 
-            var client = person as Client;
-
-            if (client != null)
+            if (person is Client client)
             {
-                if (!_listOfClient.Contains(client))
+                if (!_clientsList.Contains(client))
                 {
-                    _listOfClient.Add(client);
-                    ListSerializator(_listOfClient);
+                    _clientsList.Add(client);
+                    SerializeList(_clientsList, clientsFilePath);
                 }
                 else
                 {
@@ -123,66 +124,60 @@ namespace BankSystem.Services
                 }
             }
 
-            var employee = person as Employee;
-
-            if (employee != null)
+            if (person is Employee employee)
             {
-                if (!_listOfEmployee.Contains(employee))
+                if (!_employeersList.Contains(employee))
                 {
-                    _listOfEmployee.Add(employee);
-                    ListSerializator(_listOfEmployee);
+                    _employeersList.Add(employee);
+                    SerializeList(_employeersList, employeersFilePath);
                 }
                 else
                 {
-                    Console.WriteLine("Такой работник уже есть в списке.");
+                    Console.WriteLine("Такой сотрудник уже есть в списке.");
                 }
             }
         }
 
-        private void ListSerializator<T>(List<T> personList) where T : IPerson
+        private void SerializeList<T>(List<T> personList, string path) where T : IPerson // serialize list, path to params
         {
-            if (typeof(T) == typeof(Employee))
+            var srPersonsList = JsonConvert.SerializeObject(personList);
+            using (var streamWriter = new StreamWriter(path, false))
             {
-                var srEmployee = JsonConvert.SerializeObject(personList);
-                using (StreamWriter streamWriter = new StreamWriter(employeersPath, false))
-                {
-                    streamWriter.Write(srEmployee);
-                }
-            }
-            if (typeof(T) == typeof(Client))
-            {
-                var srEmployee = JsonConvert.SerializeObject(personList);
-                using (StreamWriter streamWriter = new StreamWriter(clientsPath, false))
-                {
-                    streamWriter.Write(srEmployee);
-                }
+                streamWriter.Write(srPersonsList);
             }
         }
 
         public Employee FindEmployee(int passportID)
         {
-            return Find<Employee>(passportID);
+            if (passportID > 0) return Find<Employee>(passportID);
+            throw new ArgumentException($"Введеный номер паспорта: {passportID}, не валиден");
         }
 
         public Client FindClient(int passportID)
         {
-            return Find<Client>(passportID);
+            if (passportID > 0) return Find<Client>(passportID);
+            throw new ArgumentException($"Введеный номер паспорта: {passportID}, не валиден");
         }
 
         private T Find<T>(int passportID) where T : IPerson
         {
             if (typeof(T) == typeof(Employee))
             {
-                IPerson employee = _listOfEmployee.Single(x => x.PassportID == passportID);
+                IPerson employee = _employeersList.Single(x => x.PassportID == passportID);
+                if (employee is null) throw new PersonNotFoundException("Сотрудник не найден.");
+
                 return (T)employee;
             }
 
-            else if (typeof(T) == typeof(Client))
+            if (typeof(T) == typeof(Client))
             {
-                IPerson client = _listOfClient.Single(x => x.PassportID == passportID);
+                IPerson client = _clientsList.Single(x => x.PassportID == passportID);
+                if (client is null) throw new PersonNotFoundException("Клиент не найден.");
+
                 return (T)client;
             }
-            throw new InvalidOperationException();
+
+            throw new InvalidOperationException("Искомый объект не найден, или не реализован метод для его поиска.");
         }
     }
 }
