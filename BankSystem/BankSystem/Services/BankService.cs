@@ -138,7 +138,7 @@ namespace BankSystem.Services
             }
         }
 
-        private void SerializeList<T>(List<T> personList, string path) where T : IPerson // serialize list, path to params
+        private void SerializeList<T>(List<T> personList, string path) where T : IPerson
         {
             var srPersonsList = JsonConvert.SerializeObject(personList);
             using (var streamWriter = new StreamWriter(path, false))
