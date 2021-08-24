@@ -35,6 +35,7 @@ namespace BankSystem
 
             Exchange exchange = new Exchange();
             var balance = exchange.СurrencyСonversion(Rubles, 800, Euro);
+            Console.WriteLine(balance);
 
             FindClient(511);
             FindEmployee(453);

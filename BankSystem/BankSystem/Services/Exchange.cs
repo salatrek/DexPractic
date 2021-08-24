@@ -3,7 +3,7 @@ using System;
 
 namespace BankSystem.Services
 {
-    class Exchange : IExchange
+    public class Exchange : IExchange
     {
         public float СurrencyСonversion<T>(T originalСurrency, float count, T desiredСurrency) where T : Currency
         {

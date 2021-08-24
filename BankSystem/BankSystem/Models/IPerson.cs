@@ -1,6 +1,6 @@
 ﻿namespace BankSystem.Models
 {
-    internal interface IPerson
+    public interface IPerson
     {
         public string Name { get; set; }
         public int Age { get; set; }

@@ -8,13 +8,13 @@ using Newtonsoft.Json;
 
 namespace BankSystem.Services
 {
-    internal class BankService
+    public class BankService
     {
         List<Client> _clientsList;
         List<Employee> _employeersList;
         Dictionary<int, List<Account>> _clientsInfo;
 
-        private const string clientsFilePath = "../../../Resources/ListOfClients.txt";
+        public string clientsFilePath = "../../../Resources/ListOfClients.txt";
         private const string employeersFilePath = "../../../Resources/ListOfEmployeers.txt";
         private const string clientsDictionaryFilePath = "../../../Resources/DictionaryOfClients.txt";
 

@@ -1,6 +1,6 @@
 ﻿namespace BankSystem.Models
 {
-    internal class Client : IPerson
+    public class Client : IPerson
     {
         public string Name { get; set; }
         public int Age { get; set; }
