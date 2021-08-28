@@ -12,29 +12,29 @@ namespace BankSystem.Test
     public class ExchangeTest
     {
         [Fact]
-        public void СurrencyСonversion_Rubles_800_Euro_Eq_9()
+        public async Task СurrencyСonversion_Rubles_800_Euro_Eq_9Async()
         {
             //Arrange
             var exchange = new Exchange();
 
             //Act
-            var result = exchange.СurrencyСonversion(
-                new Currency() { Rate = 73.13f },
+            var result = await exchange.СurrencyСonversionAsync(
+                new Currency(Currencies.RUB) ,
                 800,
-                new Currency() { Rate = 0.84f });
+                new Currency(Currencies.EUR));
 
-            var expectedResult = 800 / 73.13f * 0.84f;
+            var expectedResult = 800 * 0.011474;
 
             Assert.True(Math.Abs(expectedResult - result) <= 0.000001f);
         }
-        
+
         [Fact]
-        public void СurrencyСonversion_Null_Negative()
+        public async Task СurrencyСonversion_Null_Negative()
         {
             var exchange = new Exchange();
 
-            Assert.Throws<ArgumentNullException>(
-                () =>  exchange.СurrencyСonversion<Currency>(new Currency() { Rate = 73.13f }, 800, null));            
+            await Assert.ThrowsAsync<ArgumentNullException>(
+                () => exchange.СurrencyСonversionAsync<Currency>(new Currency(Currencies.RUB), 800, null));
         }
     } 
 }

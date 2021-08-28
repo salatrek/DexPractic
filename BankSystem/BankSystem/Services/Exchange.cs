@@ -1,20 +1,30 @@
 ﻿using BankSystem.Models;
 using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Threading.Tasks;
+using System.Linq;
 
 namespace BankSystem.Services
 {
-    public class Exchange : IExchange
+    public class Exchange
     {
-        public float СurrencyСonversion<T>(T originalСurrency, float count, T desiredСurrency) where T : Currency
+        public async Task<float> СurrencyСonversionAsync<T>(T originalСurrency, float count, T desiredСurrency) where T : Currency
         {
             if (originalСurrency != null && desiredСurrency != null)
             {
-                if (originalСurrency.Rate > 0 && desiredСurrency.Rate > 0 && count > 0)
-                {
-                    var originalCurrencyRate = originalСurrency.Rate;
-                    var desiredCurrencyRate = desiredСurrency.Rate;
 
-                    return (count / originalCurrencyRate) * desiredCurrencyRate;
+                var exchangeService = new ExchangeService();
+                var currencyRates = await exchangeService.GetRates(originalСurrency.Name, desiredСurrency.Name);
+                var type = currencyRates.Rates.GetType();
+                var desiredCurrencyProperty = type
+                    .GetProperties().Where(x => x.Name.Equals(desiredСurrency.Name)).Single();
+
+                var desiredСurrencyRate = desiredCurrencyProperty.GetValue(currencyRates.Rates);
+
+                if ((float)desiredСurrencyRate > 0 && count > 0)
+                {
+                    return (float)desiredСurrencyRate * count;
                 }
                 else
                 {

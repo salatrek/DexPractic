@@ -2,6 +2,11 @@
 {
     public class Currency
     {
-        public float Rate { get; set; }
+        public string Name { get;}
+
+        public Currency(Currencies name)
+        {
+            Name = name.ToString();
+        }
     }
 }

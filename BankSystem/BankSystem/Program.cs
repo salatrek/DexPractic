@@ -4,18 +4,20 @@ using System;
 using Bogus;
 using Bogus.DataSets;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace BankSystem
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             var service = new BankService();
 
-            var Rubles = new Models.Currency() { Rate = 73.13f };
-            var Euro = new Models.Currency() { Rate = 0.84f };
-            var Hryvnia = new Models.Currency() { Rate = 26.82f };
+            var Rubles = new Models.Currency(Currencies.RUB);
+            var Euro = new Models.Currency(Currencies.EUR);
+            var Hryvnia = new Models.Currency(Currencies.UAH);
+            var Dollar = new Models.Currency(Currencies.USD);
 
             Client Anton = new Client() { Name = "Anton client", Age = 34, PassportID = 547, Status = "Good" };
             Client Alex = new Client() { Name = "Alex client", Age = 25, PassportID = 965, Status = "Good" };
@@ -34,8 +36,7 @@ namespace BankSystem
             service.AddAccountToClient(Anna.PassportID, account5);
 
             Exchange exchange = new Exchange();
-            var balance = exchange.СurrencyСonversion(Rubles, 800, Euro);
-            Console.WriteLine(balance);
+            Console.WriteLine($"Обмен валюты: {await exchange.СurrencyСonversionAsync(Dollar, 800, Rubles)}");
 
             FindClient(511);
             FindEmployee(453);
@@ -44,6 +45,7 @@ namespace BankSystem
 
             //ClientListGenerate();
             //EmployeetListGenerate();
+
         }
 
         static void FindClient(int passportID)
