@@ -4,28 +4,35 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using System.Threading;
 using Newtonsoft.Json;
 
 namespace BankSystem.Services
 {
     public class BankService
     {
-        List<Client> _clientsList;
-        List<Employee> _employeersList;
-        Dictionary<int, List<Account>> _clientsInfo;
+        private List<Client> _clientsList;
+        private List<Employee> _employeersList;
+        private Dictionary<int, List<Account>> _clientsInfo;
 
         public string clientsFilePath = "../../../Resources/ListOfClients.txt";
         private const string employeersFilePath = "../../../Resources/ListOfEmployeers.txt";
         private const string clientsDictionaryFilePath = "../../../Resources/DictionaryOfClients.txt";
 
-        public BankService()
+        private ReaderWriterLockSlim _clientsListLock;
+
+        public BankService(bool initializeFromFile = true)
         {
             _clientsList = new List<Client>();
             _employeersList = new List<Employee>();
             _clientsInfo = new Dictionary<int, List<Account>>();
+            _clientsListLock = new ReaderWriterLockSlim();
 
-            FillListFromFile();
-            FillDictionaryFromFile();
+            if (initializeFromFile)
+            {
+                FillListFromFile();
+                FillDictionaryFromFile();
+            }
         }
 
         private void FillListFromFile()
@@ -37,9 +44,10 @@ namespace BankSystem.Services
                 {
                     text = streamReader.ReadToEnd();
                 }
-                _clientsList = JsonConvert.DeserializeObject<List<Client>>(text);
 
+                _clientsList = JsonConvert.DeserializeObject<List<Client>>(text);
             }
+
             if (File.Exists(employeersFilePath))
             {
                 string text;
@@ -47,9 +55,11 @@ namespace BankSystem.Services
                 {
                     text = streamReader.ReadToEnd();
                 }
+
                 _employeersList = JsonConvert.DeserializeObject<List<Employee>>(text);
             }
         }
+
         private void FillDictionaryFromFile()
         {
             if (File.Exists(clientsDictionaryFilePath))
@@ -99,7 +109,8 @@ namespace BankSystem.Services
             if (targetAccount == null) throw new ArgumentNullException(nameof(sourceAccount));
             if (moneyTransferHandle == null) throw new ArgumentNullException(nameof(sourceAccount));
             if (summ <= 0) throw new InvalidSummException("Указана некорректная сумма.");
-            if (summ > sourceAccount.AccountBalance) throw new NotEnoughMoneyException("Недостаточно средств на счете.");
+            if (summ > sourceAccount.AccountBalance)
+                throw new NotEnoughMoneyException("Недостаточно средств на счете.");
 
             var targetSumm = moneyTransferHandle(sourceAccount.CurrencyType, summ, targetAccount.CurrencyType);
 
@@ -113,14 +124,22 @@ namespace BankSystem.Services
 
             if (person is Client client)
             {
-                if (!_clientsList.Contains(client))
+                _clientsListLock.EnterWriteLock();
+                try
                 {
-                    _clientsList.Add(client);
-                    SerializeList(_clientsList, clientsFilePath);
+                    if (!_clientsList.Contains(client))
+                    {
+                        _clientsList.Add(client);
+                        SerializeList(_clientsList, clientsFilePath);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Такой клиент уже есть в списке.");
+                    }
                 }
-                else
+                finally
                 {
-                    Console.WriteLine("Такой клиент уже есть в списке.");
+                    _clientsListLock.ExitWriteLock();
                 }
             }
 
@@ -161,14 +180,6 @@ namespace BankSystem.Services
 
         private T Find<T>(int passportID) where T : IPerson
         {
-            if (typeof(T) == typeof(Employee))
-            {
-                IPerson employee = _employeersList.Single(x => x.PassportID == passportID);
-                if (employee is null) throw new PersonNotFoundException("Сотрудник не найден.");
-
-                return (T)employee;
-            }
-
             if (typeof(T) == typeof(Client))
             {
                 IPerson client = _clientsList.Single(x => x.PassportID == passportID);
@@ -177,7 +188,43 @@ namespace BankSystem.Services
                 return (T)client;
             }
 
+            if (typeof(T) == typeof(Employee))
+            {
+                IPerson employee = _employeersList.Single(x => x.PassportID == passportID);
+                if (employee is null) throw new PersonNotFoundException("Сотрудник не найден.");
+
+                return (T)employee;
+            }
+
             throw new InvalidOperationException("Искомый объект не найден, или не реализован метод для его поиска.");
+        }
+
+        public void PrintClientsList()
+        {
+            _clientsListLock.EnterReadLock();
+            try
+            {
+                foreach (var client in _clientsList)
+                {
+                    Console.WriteLine($"{client.PassportID}\t{client.Name}\t{client.Status}");
+                }
+                Console.WriteLine(Environment.NewLine);
+            }
+            finally
+            {
+                _clientsListLock.ExitReadLock();
+            }
+        }
+
+        public float AccrualMoney(Account account, float accrualAmount)
+        {
+            var locker = new object();
+
+            lock (locker)
+            {
+                account.AccountBalance += accrualAmount;
+                return account.AccountBalance;
+            }
         }
     }
 }

@@ -2,8 +2,8 @@
 using BankSystem.Services;
 using System;
 using Bogus;
-using Bogus.DataSets;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace BankSystem
@@ -42,10 +42,11 @@ namespace BankSystem
             FindEmployee(453);
 
             FileExportService(Anton);
+            ThreadSafeReadWriteClients();
+            Thread.Sleep(5000);
 
-            //ClientListGenerate();
+            // ClientListGenerate();
             //EmployeetListGenerate();
-
         }
 
         static void FindClient(int passportID)
@@ -61,7 +62,7 @@ namespace BankSystem
                 foreach (var item in properties)
                 {
                     Console.WriteLine($"{item.Name}\t{item.GetValue(client)}");
-                }   
+                }
             }
             catch (InvalidOperationException ex)
             {
@@ -138,7 +139,7 @@ namespace BankSystem
                 .RuleFor(x => x.Name, f => f.Name.FirstName())
                 .RuleFor(x => x.Age, f => f.Random.Int(16, 85))
                 .RuleFor(x => x.PassportID, f => f.Random.Int(1, 999))
-                .RuleFor(x => x.Position, f =>f.Name.JobType());
+                .RuleFor(x => x.Position, f => f.Name.JobType());
 
             for (int i = 1; i < 500; i++)
             {
@@ -153,6 +154,26 @@ namespace BankSystem
             }
 
             Console.WriteLine("Done");
+        }
+
+        static void ThreadSafeReadWriteClients()
+        {
+            var service = new BankService(initializeFromFile: false);
+
+            Client Anton = new Client() { Name = "Anton client", Age = 34, PassportID = 5108, Status = "Good" };
+            Client Alex = new Client() { Name = "Alex client", Age = 25, PassportID = 6009, Status = "Good" };
+            Client Anna = new Client() { Name = "Ana client", Age = 26, PassportID = 1254, Status = "Good" };
+
+            ThreadPool.QueueUserWorkItem(state => service.AddPerson(state as Client), Anton);
+            Thread.Sleep(1000);
+            ThreadPool.QueueUserWorkItem(_ => service.PrintClientsList());
+            Thread.Sleep(1000);
+            ThreadPool.QueueUserWorkItem(state => service.AddPerson(state as Client), Alex);
+            ThreadPool.QueueUserWorkItem(state => service.AddPerson(state as Client), Anna);
+            Thread.Sleep(1000);
+            ThreadPool.QueueUserWorkItem(_ => service.PrintClientsList());
+            Thread.Sleep(1000);
+            ThreadPool.QueueUserWorkItem(_ => service.PrintClientsList());
         }
     }
 }
