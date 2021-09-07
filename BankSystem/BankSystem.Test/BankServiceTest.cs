@@ -1,4 +1,5 @@
 ﻿using System.Threading;
+using System.Threading.Tasks;
 using BankSystem.Models;
 using BankSystem.Services;
 using Xunit;
@@ -25,7 +26,7 @@ namespace BankSystem.Test
         }
 
         [Fact]
-        public void ParallelAddMoney()
+        public async Task ParallelAddMoney()
         {
             //Arrange
             var bankService = new BankService(initializeFromFile: false);
@@ -46,13 +47,10 @@ namespace BankSystem.Test
             bankService.AddAccountToClient(newClient.PassportID, testAccount);
 
             //Act
-            var newBalance = 0f;
-            var thread1 = new Thread(_ => newBalance = bankService.AccrualMoney(testAccount, 200));
-            var thread2 = new Thread(_ => newBalance = bankService.AccrualMoney(testAccount, 300));
-
-            thread1.Start();
-            thread2.Start();
-            Thread.Sleep(1000);
+            await Task.Factory.StartNew(() => bankService.AccrualMoney(testAccount, 200));
+            await Task.Factory.StartNew(() => bankService.AccrualMoney(testAccount, 300));
+            
+            var newBalance = testAccount.AccountBalance;
 
             //Assert
             Assert.Equal(expected: 500f, actual: newBalance);

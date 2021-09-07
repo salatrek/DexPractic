@@ -120,6 +120,8 @@ namespace BankSystem.Services
 
         public void AddPerson<T>(T person) where T : IPerson
         {
+            Thread.Sleep(500);
+            
             if (person.Age < 18) throw new YoungPersonException("Пользователь не достиг совершеннолетия (18 лет)");
 
             if (person is Client client)
@@ -201,6 +203,8 @@ namespace BankSystem.Services
 
         public void PrintClientsList()
         {
+            Thread.Sleep(500);
+
             _clientsListLock.EnterReadLock();
             try
             {

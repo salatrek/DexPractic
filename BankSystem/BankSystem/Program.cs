@@ -42,8 +42,9 @@ namespace BankSystem
             FindEmployee(453);
 
             FileExportService(Anton);
-            ThreadSafeReadWriteClients();
-            Thread.Sleep(5000);
+
+            await ThreadSafeReadWriteClients();
+            //Thread.Sleep(5000);
 
             // ClientListGenerate();
             //EmployeetListGenerate();
@@ -156,24 +157,29 @@ namespace BankSystem
             Console.WriteLine("Done");
         }
 
-        static void ThreadSafeReadWriteClients()
+        static async Task ThreadSafeReadWriteClients()
         {
             var service = new BankService(initializeFromFile: false);
-
             Client Anton = new Client() { Name = "Anton client", Age = 34, PassportID = 5108, Status = "Good" };
             Client Alex = new Client() { Name = "Alex client", Age = 25, PassportID = 6009, Status = "Good" };
             Client Anna = new Client() { Name = "Ana client", Age = 26, PassportID = 1254, Status = "Good" };
+            
+            Task task1 = Task.Factory.StartNew(() => service.AddPerson(Anton));
+            Task task2 = Task.Factory.StartNew(() => service.AddPerson(Alex));
+            Task task3 = Task.Factory.StartNew(() => service.AddPerson(Anna));
+            Task task4 = Task.Factory.StartNew(() => service.PrintClientsList());
 
-            ThreadPool.QueueUserWorkItem(state => service.AddPerson(state as Client), Anton);
-            Thread.Sleep(1000);
-            ThreadPool.QueueUserWorkItem(_ => service.PrintClientsList());
-            Thread.Sleep(1000);
-            ThreadPool.QueueUserWorkItem(state => service.AddPerson(state as Client), Alex);
-            ThreadPool.QueueUserWorkItem(state => service.AddPerson(state as Client), Anna);
-            Thread.Sleep(1000);
-            ThreadPool.QueueUserWorkItem(_ => service.PrintClientsList());
-            Thread.Sleep(1000);
-            ThreadPool.QueueUserWorkItem(_ => service.PrintClientsList());
+            //Task.WaitAll(new[] { task1, task2, task3, task4 });
+
+            await task1;
+            await task2;
+            await task3;
+            await task4;
+
+            Console.WriteLine("Завершение");
+
+
+
         }
     }
 }
